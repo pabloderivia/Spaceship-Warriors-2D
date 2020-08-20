@@ -68,8 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         if(other.tag == "EnemyBullet" || other.tag == "Enemy"){
             lifes--;
-            Debug.Log("jugador herido");
-            if(lifes>3)
+            if(lifes>0)
                 StartCoroutine("CoroutineShowDamage");
             
             if(lifes<=0)
@@ -108,7 +107,6 @@ public class PlayerController : MonoBehaviour
         }
     IEnumerator CoroutineShowDamage()
         {
-            Debug.Log("cambiando color:");
             playerSR.color = Color.red;
             yield return new WaitForSeconds(0.5f);
             playerSR.color = Color.white;
@@ -117,7 +115,6 @@ public class PlayerController : MonoBehaviour
                 
     }
 
-//#983D3D
 
 
 

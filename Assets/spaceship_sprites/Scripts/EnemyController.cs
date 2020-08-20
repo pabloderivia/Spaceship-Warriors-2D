@@ -11,18 +11,22 @@ public class EnemyController : MonoBehaviour
     public float velocity = 0.1f;
     bool isShooting = false;
     Animator enemyAnimator;
+    Vector2 moveDirection;
+    public bool isTripleShooter;
 
 
     void Awake()
     {
         enemyRigidbody = GetComponent<Rigidbody2D>();       
-        enemyAnimator = GetComponent<Animator>();        
+        enemyAnimator = GetComponent<Animator>();   
+        moveDirection = new Vector2(0f, -1f);     
  
     }
 
     // Start is called before the first frame update
     void Start()
     {
+            StartCoroutine("CoroutineMovement");
     }
 
     /// <summary>
@@ -36,20 +40,40 @@ public class EnemyController : MonoBehaviour
     void FixedUpdate()
     {
         Move();
-        CheckStartToShoot();
+        CheckStartToShootAndMove();
     }
 
     void Shoot(){
         shipCurrentPos = transform.position;
-        Instantiate(bulletPrefab, new Vector3 (shipCurrentPos.x, shipCurrentPos.y-1.1f, shipCurrentPos.z), Quaternion.identity);
+        if(!isTripleShooter)
+        {
+            GameObject bulletMid = Instantiate(bulletPrefab, new Vector3 (shipCurrentPos.x, shipCurrentPos.y-1.1f, shipCurrentPos.z), Quaternion.identity);
+            bulletMid.GetComponent<EnemyBulletController>().SetFireDirection(Vector2.down);            
+            
+        }
+        else
+        {
+            GameObject bulletMid = Instantiate(bulletPrefab, new Vector3 (shipCurrentPos.x, shipCurrentPos.y-1.1f, shipCurrentPos.z), Quaternion.identity);
+            bulletMid.GetComponent<EnemyBulletController>().SetFireDirection(Vector2.down);            
+
+            GameObject bulletLeft = Instantiate(bulletPrefab, new Vector3 (shipCurrentPos.x-1.1f, shipCurrentPos.y, shipCurrentPos.z), Quaternion.identity);
+            bulletLeft.GetComponent<EnemyBulletController>().SetFireDirection(Vector2.left);
+            bulletLeft.GetComponent<EnemyBulletController>().SetFireRotation(-90f);
+
+            GameObject bulletRight = Instantiate(bulletPrefab, new Vector3 (shipCurrentPos.x+1.1f, shipCurrentPos.y, shipCurrentPos.z), Quaternion.identity); 
+            bulletRight.GetComponent<EnemyBulletController>().SetFireDirection(Vector2.right);
+            bulletRight.GetComponent<EnemyBulletController>().SetFireRotation(90f);
+            
+
+        }
     }
 
     void Move(){
-        enemyRigidbody.velocity = new Vector2(0f, -1f*velocity);
+        enemyRigidbody.velocity = moveDirection*velocity;
 
     }
 
-    void CheckStartToShoot(){
+    void CheckStartToShootAndMove(){
         shipCurrentPos = transform.position;        
         if((shipCurrentPos.y <=5) && isShooting==false){
             InvokeRepeating("Shoot", 0.2f, 1.5f);
@@ -75,5 +99,21 @@ public class EnemyController : MonoBehaviour
             Destroy(this.gameObject);
          }
 
+    }
+
+    IEnumerator CoroutineMovement()
+    {
+        while(true)
+        {
+            moveDirection = new Vector2(-1, -1);
+            yield return new WaitForSeconds(1f);
+            moveDirection = new Vector2(1, -1);
+            yield return new WaitForSeconds(1f);
+            moveDirection = new Vector2(-1, -0.5f);
+            yield return new WaitForSeconds(1f);
+            moveDirection = new Vector2(1, -0.5f);
+            yield return new WaitForSeconds(1f);
+            moveDirection = new Vector2(0, -2f);
+        }
     }
 }
